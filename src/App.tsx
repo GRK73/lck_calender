@@ -18,89 +18,6 @@ import {
 import type { Match } from './types';
 import './App.css';
 
-const EWC_MATCHES: Match[] = [
-  {
-    id: 'ewc-2026-1',
-    startTime: '2026-05-12T08:00:00Z',
-    state: 'unstarted',
-    type: 'match',
-    blockName: 'Road to EWC',
-    league: { name: 'EWC', slug: 'ewc' },
-    match: {
-      id: 'ewc-m1',
-      teams: [
-        { name: 'FearX', code: 'FOX', image: '', result: { outcome: '', gameWins: 0 }, record: { wins: 0, losses: 0 } },
-        { name: 'T1', code: 'T1', image: '', result: { outcome: '', gameWins: 0 }, record: { wins: 0, losses: 0 } }
-      ],
-      strategy: { type: 'bestOf', count: 3 }
-    }
-  },
-  {
-    id: 'ewc-2026-2',
-    startTime: '2026-05-12T11:00:00Z',
-    state: 'unstarted',
-    type: 'match',
-    blockName: 'Road to EWC',
-    league: { name: 'EWC', slug: 'ewc' },
-    match: {
-      id: 'ewc-m2',
-      teams: [
-        { name: 'Hanwha Life Esports', code: 'HLE', image: '', result: { outcome: '', gameWins: 0 }, record: { wins: 0, losses: 0 } },
-        { name: 'Dplus KIA', code: 'DK', image: '', result: { outcome: '', gameWins: 0 }, record: { wins: 0, losses: 0 } }
-      ],
-      strategy: { type: 'bestOf', count: 3 }
-    }
-  },
-  {
-    id: 'ewc-2026-3',
-    startTime: '2026-05-25T08:00:00Z',
-    state: 'unstarted',
-    type: 'match',
-    blockName: 'Road to EWC Final',
-    league: { name: 'EWC', slug: 'ewc' },
-    match: {
-      id: 'ewc-m3',
-      teams: [
-        { name: 'TBD', code: 'TBD', image: '', result: { outcome: '', gameWins: 0 }, record: { wins: 0, losses: 0 } },
-        { name: 'TBD', code: 'TBD', image: '', result: { outcome: '', gameWins: 0 }, record: { wins: 0, losses: 0 } }
-      ],
-      strategy: { type: 'bestOf', count: 5 }
-    }
-  },
-  {
-    id: 'ewc-2026-4',
-    startTime: '2026-05-26T08:00:00Z',
-    state: 'unstarted',
-    type: 'match',
-    blockName: 'Road to EWC Runner-up',
-    league: { name: 'EWC', slug: 'ewc' },
-    match: {
-      id: 'ewc-m4',
-      teams: [
-        { name: 'TBD', code: 'TBD', image: '', result: { outcome: '', gameWins: 0 }, record: { wins: 0, losses: 0 } },
-        { name: 'TBD', code: 'TBD', image: '', result: { outcome: '', gameWins: 0 }, record: { wins: 0, losses: 0 } }
-      ],
-      strategy: { type: 'bestOf', count: 5 }
-    }
-  },
-  {
-    id: 'ewc-2026-main',
-    startTime: '2026-07-15T08:00:00Z',
-    state: 'unstarted',
-    type: 'match',
-    blockName: 'EWC 2026 Main Event',
-    league: { name: 'EWC', slug: 'ewc' },
-    match: {
-      id: 'ewc-main1',
-      teams: [
-        { name: 'TBD', code: 'TBD', image: '', result: { outcome: '', gameWins: 0 }, record: { wins: 0, losses: 0 } },
-        { name: 'TBD', code: 'TBD', image: '', result: { outcome: '', gameWins: 0 }, record: { wins: 0, losses: 0 } }
-      ],
-      strategy: { type: 'bestOf', count: 1 }
-    }
-  }
-];
-
 const App: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<'month' | 'week'>('month');
@@ -133,9 +50,9 @@ const App: React.FC = () => {
         }
       });
       if (response.data && response.data.data && response.data.data.schedule && response.data.data.schedule.events) {
-        setMatches([...response.data.data.schedule.events, ...EWC_MATCHES]);
+        setMatches(response.data.data.schedule.events);
       } else {
-        setMatches(EWC_MATCHES);
+        setMatches([]);
       }
       setError(null);
     } catch (err) {
