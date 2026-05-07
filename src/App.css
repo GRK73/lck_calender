@@ -1,0 +1,267 @@
+:root {
+  --bg-color: #ffffff;
+  --text-color: #1a1a1a;
+  --border-color: #e5e5e5;
+  --header-bg: #f8f9fa;
+  --card-bg: #ffffff;
+  --hover-bg: #f3f4f6;
+  --accent-color: #007bff;
+  --today-bg: #e6f2ff;
+  --win-color: #10b981;
+  --loss-color: #ef4444;
+  --secondary-text: #6b7280;
+}
+
+[data-theme='dark'] {
+  --bg-color: #121212;
+  --text-color: #f1f1f1;
+  --border-color: #333333;
+  --header-bg: #1e1e1e;
+  --card-bg: #1e1e1e;
+  --hover-bg: #2a2a2a;
+  --accent-color: #3b82f6;
+  --today-bg: #1e3a5f;
+  --win-color: #34d399;
+  --loss-color: #f87171;
+  --secondary-text: #9ca3af;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.app-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.header-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.btn {
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn:hover {
+  background-color: var(--hover-bg);
+}
+
+.btn.active {
+  background-color: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
+}
+
+.month-nav {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.month-nav h2 {
+  margin: 0;
+  min-width: 150px;
+  text-align: center;
+}
+
+/* Calendar Grid */
+.calendar-grid {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: var(--card-bg);
+}
+
+.days-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background-color: var(--header-bg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.day-name {
+  padding: 10px;
+  text-align: center;
+  font-weight: bold;
+  border-right: 1px solid var(--border-color);
+}
+.day-name:last-child {
+  border-right: none;
+}
+
+.calendar-body {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: minmax(120px, auto);
+}
+
+.calendar-cell {
+  border-right: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  padding: 8px;
+  position: relative;
+  transition: background-color 0.2s;
+}
+
+.calendar-cell:nth-child(7n) {
+  border-right: none;
+}
+
+.calendar-cell.empty-cell {
+  background-color: var(--header-bg);
+  opacity: 0.5;
+}
+
+.calendar-cell.today {
+  background-color: var(--today-bg);
+}
+
+.date-number {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: inline-block;
+}
+
+/* Match Event */
+.match-event {
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 6px;
+  margin-bottom: 6px;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: default;
+}
+
+.match-event:hover {
+  border-color: var(--accent-color);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.match-time {
+  color: var(--secondary-text);
+  font-size: 11px;
+  text-align: center;
+  font-weight: 600;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.match-teams {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.team-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.team-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.team-logo {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.team-code {
+  font-weight: bold;
+}
+
+.team-score {
+  font-weight: bold;
+}
+
+.team-score.win {
+  color: var(--win-color);
+}
+
+.team-score.loss {
+  color: var(--loss-color);
+}
+
+.match-status {
+  font-size: 10px;
+  text-align: center;
+  color: var(--secondary-text);
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.match-status.live {
+  color: var(--loss-color);
+  font-weight: bold;
+}
+
+/* Weekly View */
+.weekly-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+}
+
+.weekly-day {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 10px;
+  min-height: 400px;
+}
+
+.weekly-day-header {
+  text-align: center;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.weekly-day.today {
+  border-color: var(--accent-color);
+  background-color: var(--today-bg);
+}
+
+.loading, .error {
+  text-align: center;
+  padding: 40px;
+  font-size: 18px;
+  color: var(--secondary-text);
+}
