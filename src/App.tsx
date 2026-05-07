@@ -38,6 +38,7 @@ const App: React.FC = () => {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -121,7 +122,7 @@ const App: React.FC = () => {
 
   const renderSidebar = () => {
     return (
-      <div className="sidebar">
+      <div className={`sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
         <div className="sidebar-header">Leagues</div>
         <div className="league-list">
           {leagues.map((league) => (
@@ -148,6 +149,9 @@ const App: React.FC = () => {
     return (
       <div className="header">
         <div className="header-controls">
+          <button className="btn" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+            ☰
+          </button>
           <button className={`btn ${view === 'month' ? 'active' : ''}`} onClick={() => setView('month')}>Month</button>
           <button className={`btn ${view === 'week' ? 'active' : ''}`} onClick={() => setView('week')}>Week</button>
           <button className="btn" onClick={toggleTheme}>

@@ -49,6 +49,18 @@ body {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
+  flex-shrink: 0;
+}
+
+.sidebar.closed {
+  width: 0;
+  transform: translateX(-100%);
+  border-right: none;
+}
+
+.sidebar.open {
+  transform: translateX(0);
 }
 
 .sidebar-header {
