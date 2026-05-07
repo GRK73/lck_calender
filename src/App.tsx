@@ -15,8 +15,11 @@ import {
   subWeeks,
   addWeeks
 } from 'date-fns';
-import type { Match } from './types';
+import type { Match, League } from './types';
 import './App.css';
+
+const LCK_LEAGUE_ID = '98767991310872058';
+const API_KEY = '0TvQnueqKa5mxJntVWt0w4LpLfEkrV1Ta8rQBb9Z';
 
 const App: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -29,6 +32,9 @@ const App: React.FC = () => {
     return 'light';
   });
 
+  const [leagues, setLeagues] = useState<League[]>([]);
+  const [selectedLeagueId, setSelectedLeagueId] = useState<string>(LCK_LEAGUE_ID);
+  
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,36 +43,55 @@ const App: React.FC = () => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  const fetchSchedule = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get('https://esports-api.lolesports.com/persisted/gw/getSchedule', {
-        params: {
-          hl: 'ko-KR',
-          leagueId: '98767991310872058'
-        },
-        headers: {
-          'x-api-key': '0TvQnueqKa5mxJntVWt0w4LpLfEkrV1Ta8rQBb9Z'
-        }
-      });
-      if (response.data && response.data.data && response.data.data.schedule && response.data.data.schedule.events) {
-        setMatches(response.data.data.schedule.events);
-      } else {
-        setMatches([]);
-      }
-      setError(null);
-    } catch (err) {
-      console.error(err);
-      setError('Failed to load schedule directly from LoL Esports API.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Fetch Leagues
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchSchedule();
+    const fetchLeagues = async () => {
+      try {
+        const response = await axios.get('https://esports-api.lolesports.com/persisted/gw/getLeagues', {
+          params: { hl: 'ko-KR' },
+          headers: { 'x-api-key': API_KEY }
+        });
+        if (response.data && response.data.data && response.data.data.leagues) {
+          setLeagues(response.data.data.leagues);
+        }
+      } catch (err) {
+        console.error('Failed to load leagues:', err);
+      }
+    };
+    fetchLeagues();
   }, []);
+
+  // Fetch Schedule when selectedLeagueId changes
+  useEffect(() => {
+    const fetchSchedule = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('https://esports-api.lolesports.com/persisted/gw/getSchedule', {
+          params: {
+            hl: 'ko-KR',
+            leagueId: selectedLeagueId
+          },
+          headers: {
+            'x-api-key': API_KEY
+          }
+        });
+        if (response.data && response.data.data && response.data.data.schedule && response.data.data.schedule.events) {
+          setMatches(response.data.data.schedule.events);
+        } else {
+          setMatches([]);
+        }
+        setError(null);
+      } catch (err) {
+        console.error(err);
+        setError('Failed to load schedule directly from LoL Esports API.');
+        setMatches([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSchedule();
+  }, [selectedLeagueId]);
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
@@ -92,6 +117,30 @@ const App: React.FC = () => {
 
   const todayDate = () => {
     setCurrentDate(new Date());
+  };
+
+  const renderSidebar = () => {
+    return (
+      <div className="sidebar">
+        <div className="sidebar-header">Leagues</div>
+        <div className="league-list">
+          {leagues.map((league) => (
+            <div 
+              key={league.id} 
+              className={`league-item ${selectedLeagueId === league.id ? 'active' : ''}`}
+              onClick={() => setSelectedLeagueId(league.id)}
+            >
+              {league.image ? (
+                <img src={league.image} alt={league.name} className="league-logo" />
+              ) : (
+                <div className="league-logo" />
+              )}
+              <span className="league-name">{league.name}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   };
 
   const renderHeader = () => {
@@ -136,14 +185,16 @@ const App: React.FC = () => {
   };
 
   const renderMatch = (match: Match) => {
-    const isCompleted = match.state === 'completed';
     const inProgress = match.state === 'inProgress';
     const matchData = match.match;
+    // Check if any team has won a game or if there's a result structure
+    // Sometimes 'completed' state implies a score
+    const hasScore = match.state === 'completed' || inProgress;
 
     return (
       <div className="match-event" key={match.id}>
         <div className="match-time">
-          {format(parseISO(match.startTime), 'HH:mm')} - {match.blockName || 'LCK'}
+          {format(parseISO(match.startTime), 'HH:mm')} - {match.blockName || match.league?.name || 'Match'}
         </div>
         {matchData && matchData.teams && matchData.teams.length === 2 && (
           <div className="match-teams">
@@ -153,8 +204,8 @@ const App: React.FC = () => {
                   {team.image ? <img src={team.image} alt={team.code} className="team-logo" /> : <div className="team-logo" />}
                   <span className="team-code">{team.code}</span>
                 </div>
-                <span className={`team-score ${isCompleted ? (team.result?.outcome === 'win' ? 'win' : 'loss') : ''}`}>
-                  {isCompleted || inProgress ? team.result?.gameWins : '-'}
+                <span className={`team-score ${match.state === 'completed' ? (team.result?.outcome === 'win' ? 'win' : 'loss') : ''}`}>
+                  {hasScore ? (team.result?.gameWins ?? '-') : '-'}
                 </span>
               </div>
             ))}
@@ -229,19 +280,22 @@ const App: React.FC = () => {
 
   return (
     <div className="app-container">
-      {renderHeader()}
-      {loading ? (
-        <div className="loading">Loading schedule...</div>
-      ) : error ? (
-        <div className="error">{error}</div>
-      ) : view === 'month' ? (
-        <div className="calendar-grid">
-          {renderDays()}
-          {renderCells()}
-        </div>
-      ) : (
-        renderWeeklyView()
-      )}
+      {renderSidebar()}
+      <div className="main-content">
+        {renderHeader()}
+        {loading ? (
+          <div className="loading">Loading schedule...</div>
+        ) : error ? (
+          <div className="error">{error}</div>
+        ) : view === 'month' ? (
+          <div className="calendar-grid">
+            {renderDays()}
+            {renderCells()}
+          </div>
+        ) : (
+          renderWeeklyView()
+        )}
+      </div>
     </div>
   );
 };

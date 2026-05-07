@@ -1,3 +1,12 @@
+export interface League {
+  id: string;
+  slug: string;
+  name: string;
+  region: string;
+  image: string;
+  priority: number;
+}
+
 export interface Match {
   id: string;
   startTime: string; // ISO 8601 string
