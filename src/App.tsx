@@ -161,7 +161,6 @@ const App: React.FC = () => {
           </div>
         )}
         {inProgress && <div className="match-status live">LIVE</div>}
-        {isCompleted && <div className="match-status">Final</div>}
       </div>
     );
   };
