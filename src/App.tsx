@@ -298,19 +298,21 @@ const App: React.FC = () => {
     <div className="app-container">
       {renderSidebar()}
       <div className="main-content">
-        {renderHeader()}
-        {loading ? (
-          <div className="loading">Loading schedule...</div>
-        ) : error ? (
-          <div className="error">{error}</div>
-        ) : view === 'month' ? (
-          <div className="calendar-grid">
-            {renderDays()}
-            {renderCells()}
-          </div>
-        ) : (
-          renderWeeklyView()
-        )}
+        <div className="content-wrapper">
+          {renderHeader()}
+          {loading ? (
+            <div className="loading">Loading schedule...</div>
+          ) : error ? (
+            <div className="error">{error}</div>
+          ) : view === 'month' ? (
+            <div className="calendar-grid">
+              {renderDays()}
+              {renderCells()}
+            </div>
+          ) : (
+            renderWeeklyView()
+          )}
+        </div>
       </div>
     </div>
   );

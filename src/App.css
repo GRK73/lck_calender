@@ -125,6 +125,15 @@ body {
   flex-direction: column;
   overflow-y: auto;
   padding: 20px;
+  align-items: center;
+}
+
+.content-wrapper {
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .header {
