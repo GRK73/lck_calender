@@ -183,7 +183,7 @@ body {
   border-radius: 8px;
   overflow: hidden;
   background-color: var(--card-bg);
-  flex: 1;
+  flex: 1 0 auto;
 }
 
 .days-header {
@@ -324,7 +324,7 @@ body {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 10px;
-  flex: 1;
+  flex: 1 0 auto;
 }
 
 .weekly-day {
