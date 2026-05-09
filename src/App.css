@@ -363,3 +363,69 @@ body {
   font-size: 18px;
   color: var(--secondary-text);
 }
+
+/* Mobile Optimization */
+@media (max-width: 768px) {
+  .sidebar {
+    position: absolute;
+    height: 100%;
+    z-index: 100;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.2);
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .month-nav {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .month-nav h2 {
+    font-size: 1.2rem;
+    min-width: unset;
+  }
+
+  .days-header {
+    font-size: 12px;
+  }
+
+  .day-name {
+    padding: 6px 2px;
+  }
+
+  .calendar-cell {
+    padding: 4px;
+  }
+
+  .date-number {
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+
+  .match-event {
+    padding: 4px;
+    font-size: 10px;
+  }
+
+  .match-time {
+    font-size: 9px;
+    padding-bottom: 2px;
+  }
+
+  .team-logo {
+    width: 14px;
+    height: 14px;
+  }
+
+  .team-code, .team-score {
+    font-size: 10px;
+  }
+
+  .weekly-grid {
+    display: flex;
+    flex-direction: column;
+  }
+}
