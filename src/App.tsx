@@ -210,7 +210,7 @@ const App: React.FC = () => {
     return (
       <div className="match-event" key={match.id}>
         <div className="match-time">
-          {format(parseISO(match.startTime), 'HH:mm')} - {match.blockName || match.league?.name || 'Match'}
+          <strong>[{match.league?.name}]</strong> {format(parseISO(match.startTime), 'HH:mm')} - {match.blockName || 'Match'}
         </div>
         {matchData && matchData.teams && matchData.teams.length === 2 && (
           <div className="match-teams">
