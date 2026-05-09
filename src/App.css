@@ -39,6 +39,17 @@ body {
   transition: background-color 0.3s, color 0.3s;
 }
 
+.loading, .error {
+  text-align: center;
+  padding: 40px;
+  font-size: 18px;
+  color: var(--secondary-text);
+}
+
+/* =========================================================================
+   DESKTOP UI STYLES
+   ========================================================================= */
+
 .app-container {
   display: flex;
   height: 100vh;
@@ -108,7 +119,7 @@ body {
   border-left: 4px solid var(--accent-color);
 }
 
-.league-logo {
+.league-logo, .league-logo-placeholder {
   width: 24px;
   height: 24px;
   object-fit: contain;
@@ -246,8 +257,8 @@ body {
   display: inline-block;
 }
 
-/* Match Event */
-.match-event {
+/* Desktop Match Event */
+.desktop-match-event {
   background-color: var(--bg-color);
   border: 1px solid var(--border-color);
   border-radius: 6px;
@@ -260,12 +271,12 @@ body {
   cursor: default;
 }
 
-.match-event:hover {
+.desktop-match-event:hover {
   border-color: var(--accent-color);
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.match-time {
+.desktop-match-time {
   color: var(--secondary-text);
   font-size: 11px;
   text-align: center;
@@ -274,61 +285,57 @@ body {
   border-bottom: 1px solid var(--border-color);
 }
 
-.match-teams {
+.desktop-match-teams {
   display: flex;
   flex-direction: column;
   gap: 4px;
   margin-top: 4px;
 }
 
-.team-row {
+.desktop-team-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.team-info {
+.desktop-team-info {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.team-logo {
+.desktop-team-logo, .desktop-team-logo-placeholder {
   width: 20px;
   height: 20px;
   object-fit: contain;
 }
 
-.team-code {
+.desktop-team-code {
   font-weight: bold;
 }
 
-.team-score {
+.desktop-team-score {
   font-weight: bold;
 }
 
-.team-score.win {
+.desktop-team-score.win {
   color: var(--win-color);
 }
 
-.team-score.loss {
+.desktop-team-score.loss {
   color: var(--loss-color);
 }
 
-.match-status {
+.desktop-match-live {
   font-size: 10px;
   text-align: center;
-  color: var(--secondary-text);
   text-transform: uppercase;
   margin-top: 2px;
-}
-
-.match-status.live {
   color: var(--loss-color);
   font-weight: bold;
 }
 
-/* Weekly View */
+/* Desktop Weekly View */
 .weekly-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -357,75 +364,305 @@ body {
   background-color: var(--today-bg);
 }
 
-.loading, .error {
+.no-matches-desktop {
   text-align: center;
-  padding: 40px;
-  font-size: 18px;
+  color: var(--secondary-text);
+  font-size: 11px;
+  padding-top: 10px;
+}
+
+/* =========================================================================
+   MOBILE UI STYLES (COMPLETELY REDESIGNED)
+   ========================================================================= */
+
+.mobile-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: var(--bg-color);
+  overflow: hidden;
+}
+
+.mobile-header {
+  background-color: var(--header-bg);
+  border-bottom: 1px solid var(--border-color);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.mobile-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mobile-header-top h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: var(--accent-color);
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.mobile-header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.icon-btn:active {
+  background-color: var(--border-color);
+}
+
+.mobile-date-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  padding: 4px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.mobile-date-display {
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.mobile-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background-color: var(--hover-bg);
+}
+
+.mobile-day-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mobile-day-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding-left: 4px;
+}
+
+.mobile-day-name {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.mobile-day-date {
+  color: var(--secondary-text);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.mobile-day-section.today .mobile-day-name {
+  color: var(--accent-color);
+}
+
+.mobile-matches-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Match Card Design */
+.match-card {
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.03);
+  position: relative;
+}
+
+.match-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.match-league {
+  color: var(--accent-color);
+}
+
+.match-time {
   color: var(--secondary-text);
 }
 
-/* Mobile Optimization */
-@media (max-width: 768px) {
-  .sidebar {
-    position: absolute;
-    height: 100%;
-    z-index: 100;
-    box-shadow: 2px 0 8px rgba(0,0,0,0.2);
-  }
+.match-card-block {
+  font-size: 0.8rem;
+  color: var(--secondary-text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+  margin-top: -6px;
+}
 
-  .header {
-    flex-direction: column;
-    align-items: stretch;
-  }
+.match-card-teams {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 
-  .month-nav {
-    justify-content: space-between;
-    width: 100%;
-  }
+.match-card-team {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-  .month-nav h2 {
-    font-size: 1.2rem;
-    min-width: unset;
-  }
+.team-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
-  .days-header {
-    font-size: 12px;
-  }
+.team-logo, .team-logo-placeholder {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
 
-  .day-name {
-    padding: 6px 2px;
-  }
+.team-name {
+  font-weight: 600;
+  font-size: 1rem;
+}
 
-  .calendar-cell {
-    padding: 4px;
-  }
+.team-score {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
 
-  .date-number {
-    font-size: 12px;
-    margin-bottom: 4px;
-  }
+.team-score.win {
+  color: var(--win-color);
+}
 
-  .match-event {
-    padding: 4px;
-    font-size: 10px;
-  }
+.team-score.loss {
+  color: var(--loss-color);
+}
 
-  .match-time {
-    font-size: 9px;
-    padding-bottom: 2px;
-  }
+.match-live-badge {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--loss-color);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
 
-  .team-logo {
-    width: 14px;
-    height: 14px;
-  }
+.no-matches {
+  background-color: transparent;
+  color: var(--secondary-text);
+  font-size: 0.9rem;
+  padding: 12px;
+  text-align: center;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+}
 
-  .team-code, .team-score {
-    font-size: 10px;
-  }
+/* Mobile Modal (Filter) */
+.mobile-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+}
 
-  .weekly-grid {
-    display: flex;
-    flex-direction: column;
-  }
+.mobile-modal {
+  background-color: var(--bg-color);
+  width: 100%;
+  height: 80vh;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.mobile-modal-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mobile-modal-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.close-btn {
+  font-size: 1.2rem;
+}
+
+.mobile-modal-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 0;
+}
+
+.mobile-league-item {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  gap: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.mobile-league-item.active {
+  background-color: var(--today-bg);
+}
+
+.check-icon {
+  margin-left: auto;
+  color: var(--accent-color);
+  font-weight: bold;
+  font-size: 1.2rem;
 }

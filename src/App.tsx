@@ -38,7 +38,7 @@ const App: React.FC = () => {
       const mobile = window.innerWidth <= 768;
       setIsMobile(mobile);
       if (mobile) {
-        setView('week');
+        setView('week'); // Mobile forces week logic
       }
     };
     window.addEventListener('resize', handleResize);
@@ -58,12 +58,12 @@ const App: React.FC = () => {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return window.innerWidth > 768;
-    }
-    return true;
-  });
+  
+  // Desktop Sidebar State
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  
+  // Mobile Modal State
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -111,6 +111,9 @@ const App: React.FC = () => {
           }
         });
         
+        // Sort matches by time
+        allMatches.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+        
         setMatches(allMatches);
         setError(null);
       } catch (err) {
@@ -132,7 +135,7 @@ const App: React.FC = () => {
   };
 
   const nextDate = () => {
-    if (view === 'month') {
+    if (view === 'month' && !isMobile) {
       setCurrentDate(addMonths(currentDate, 1));
     } else {
       setCurrentDate(addWeeks(currentDate, 1));
@@ -140,7 +143,7 @@ const App: React.FC = () => {
   };
 
   const prevDate = () => {
-    if (view === 'month') {
+    if (view === 'month' && !isMobile) {
       setCurrentDate(subMonths(currentDate, 1));
     } else {
       setCurrentDate(subWeeks(currentDate, 1));
@@ -157,6 +160,142 @@ const App: React.FC = () => {
     );
   };
 
+  const getMatchesForDay = (day: Date) => {
+    return matches.filter(match => isSameDay(parseISO(match.startTime), day));
+  };
+
+  const renderMatchCard = (match: Match) => {
+    const inProgress = match.state === 'inProgress';
+    const matchData = match.match;
+    const hasScore = match.state === 'completed' || inProgress;
+
+    return (
+      <div className="match-card" key={match.id}>
+        <div className="match-card-header">
+          <span className="match-league">[{match.league?.name}]</span>
+          <span className="match-time">{format(parseISO(match.startTime), 'HH:mm')}</span>
+        </div>
+        <div className="match-card-block">{match.blockName || 'Match'}</div>
+        
+        {matchData && matchData.teams && matchData.teams.length === 2 && (
+          <div className="match-card-teams">
+            {matchData.teams.map((team, idx) => (
+              <div className="match-card-team" key={team.code || idx}>
+                <div className="team-info">
+                  {team.image ? <img src={team.image} alt={team.code} className="team-logo" /> : <div className="team-logo-placeholder" />}
+                  <span className="team-name">{team.code}</span>
+                </div>
+                <span className={`team-score ${match.state === 'completed' ? (team.result?.outcome === 'win' ? 'win' : 'loss') : ''}`}>
+                  {hasScore ? (team.result?.gameWins ?? '-') : '-'}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+        {inProgress && <div className="match-live-badge">LIVE</div>}
+      </div>
+    );
+  };
+
+  // --- MOBILE UI RENDERERS ---
+
+  const renderMobileHeader = () => {
+    const start = startOfWeek(currentDate);
+    const end = endOfWeek(currentDate);
+    
+    return (
+      <div className="mobile-header">
+        <div className="mobile-header-top">
+          <h2>LoL Cal</h2>
+          <div className="mobile-header-actions">
+            <button className="icon-btn" onClick={() => setIsMobileFilterOpen(true)}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+            </button>
+            <button className="icon-btn" onClick={toggleTheme}>
+              {theme === 'light' ? '🌙' : '☀️'}
+            </button>
+          </div>
+        </div>
+        <div className="mobile-date-nav">
+          <button className="icon-btn" onClick={prevDate}>&lt;</button>
+          <div className="mobile-date-display" onClick={todayDate}>
+            {format(start, 'MMM d')} - {format(end, 'MMM d')}
+          </div>
+          <button className="icon-btn" onClick={nextDate}>&gt;</button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderMobileView = () => {
+    const startDate = startOfWeek(currentDate);
+    const days = [];
+
+    for (let i = 0; i < 7; i++) {
+      const day = addDays(startDate, i);
+      const dayMatches = getMatchesForDay(day);
+
+      days.push(
+        <div className={`mobile-day-section ${isSameDay(day, new Date()) ? 'today' : ''}`} key={day.toString()}>
+          <div className="mobile-day-header">
+            <span className="mobile-day-name">{format(day, 'EEEE')}</span>
+            <span className="mobile-day-date">{format(day, 'MMM d')}</span>
+          </div>
+          <div className="mobile-matches-list">
+            {dayMatches.length > 0 ? dayMatches.map(renderMatchCard) : <div className="no-matches">No matches scheduled</div>}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="mobile-container">
+        {renderMobileHeader()}
+        
+        <div className="mobile-content">
+          {loading ? (
+            <div className="loading">Loading schedule...</div>
+          ) : error ? (
+            <div className="error">{error}</div>
+          ) : (
+            days
+          )}
+        </div>
+
+        {/* Mobile League Filter Modal */}
+        {isMobileFilterOpen && (
+          <div className="mobile-modal-overlay" onClick={() => setIsMobileFilterOpen(false)}>
+            <div className="mobile-modal" onClick={e => e.stopPropagation()}>
+              <div className="mobile-modal-header">
+                <h3>Select Leagues</h3>
+                <button className="icon-btn close-btn" onClick={() => setIsMobileFilterOpen(false)}>✕</button>
+              </div>
+              <div className="mobile-modal-content">
+                {leagues.map((league) => (
+                  <div 
+                    key={league.id} 
+                    className={`mobile-league-item ${selectedLeagueIds.includes(league.id) ? 'active' : ''}`}
+                    onClick={() => toggleLeague(league.id)}
+                  >
+                    {league.image ? (
+                      <img src={league.image} alt={league.name} className="league-logo" />
+                    ) : (
+                      <div className="league-logo-placeholder" />
+                    )}
+                    <span className="league-name">{league.name}</span>
+                    {selectedLeagueIds.includes(league.id) && <span className="check-icon">✓</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // --- DESKTOP UI RENDERERS ---
+
   const renderSidebar = () => {
     return (
       <div className={`sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
@@ -171,7 +310,7 @@ const App: React.FC = () => {
               {league.image ? (
                 <img src={league.image} alt={league.name} className="league-logo" />
               ) : (
-                <div className="league-logo" />
+                <div className="league-logo-placeholder" />
               )}
               <span className="league-name">{league.name}</span>
             </div>
@@ -189,12 +328,8 @@ const App: React.FC = () => {
           <button className="btn" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
             ☰
           </button>
-          {!isMobile && (
-            <>
-              <button className={`btn ${view === 'month' ? 'active' : ''}`} onClick={() => setView('month')}>Month</button>
-              <button className={`btn ${view === 'week' ? 'active' : ''}`} onClick={() => setView('week')}>Week</button>
-            </>
-          )}
+          <button className={`btn ${view === 'month' ? 'active' : ''}`} onClick={() => setView('month')}>Month</button>
+          <button className={`btn ${view === 'week' ? 'active' : ''}`} onClick={() => setView('week')}>Week</button>
           <button className="btn" onClick={toggleTheme}>
             {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
           </button>
@@ -225,38 +360,32 @@ const App: React.FC = () => {
     return <div className="days-header">{days}</div>;
   };
 
-  const getMatchesForDay = (day: Date) => {
-    return matches.filter(match => isSameDay(parseISO(match.startTime), day));
-  };
-
-  const renderMatch = (match: Match) => {
+  const renderDesktopMatch = (match: Match) => {
     const inProgress = match.state === 'inProgress';
     const matchData = match.match;
-    // Check if any team has won a game or if there's a result structure
-    // Sometimes 'completed' state implies a score
     const hasScore = match.state === 'completed' || inProgress;
 
     return (
-      <div className="match-event" key={match.id}>
-        <div className="match-time">
+      <div className="desktop-match-event" key={match.id}>
+        <div className="desktop-match-time">
           <strong>[{match.league?.name}]</strong> {format(parseISO(match.startTime), 'HH:mm')} - {match.blockName || 'Match'}
         </div>
         {matchData && matchData.teams && matchData.teams.length === 2 && (
-          <div className="match-teams">
+          <div className="desktop-match-teams">
             {matchData.teams.map((team, idx) => (
-              <div className="team-row" key={team.code || idx}>
-                <div className="team-info">
-                  {team.image ? <img src={team.image} alt={team.code} className="team-logo" /> : <div className="team-logo" />}
-                  <span className="team-code">{team.code}</span>
+              <div className="desktop-team-row" key={team.code || idx}>
+                <div className="desktop-team-info">
+                  {team.image ? <img src={team.image} alt={team.code} className="desktop-team-logo" /> : <div className="desktop-team-logo-placeholder" />}
+                  <span className="desktop-team-code">{team.code}</span>
                 </div>
-                <span className={`team-score ${match.state === 'completed' ? (team.result?.outcome === 'win' ? 'win' : 'loss') : ''}`}>
+                <span className={`desktop-team-score ${match.state === 'completed' ? (team.result?.outcome === 'win' ? 'win' : 'loss') : ''}`}>
                   {hasScore ? (team.result?.gameWins ?? '-') : '-'}
                 </span>
               </div>
             ))}
           </div>
         )}
-        {inProgress && <div className="match-status live">LIVE</div>}
+        {inProgress && <div className="desktop-match-live">LIVE</div>}
       </div>
     );
   };
@@ -284,7 +413,7 @@ const App: React.FC = () => {
           >
             <span className="date-number">{formattedDate}</span>
             <div className="events-container">
-              {dayMatches.map(renderMatch)}
+              {dayMatches.map(renderDesktopMatch)}
             </div>
           </div>
         );
@@ -300,7 +429,7 @@ const App: React.FC = () => {
     return <div className="calendar-grid">{rows}</div>;
   };
 
-  const renderWeeklyView = () => {
+  const renderDesktopWeeklyView = () => {
     const startDate = startOfWeek(currentDate);
     const days = [];
 
@@ -314,7 +443,7 @@ const App: React.FC = () => {
             {format(day, 'EEE, MMM d')}
           </div>
           <div className="events-container">
-            {dayMatches.length > 0 ? dayMatches.map(renderMatch) : <div className="match-time">No matches</div>}
+            {dayMatches.length > 0 ? dayMatches.map(renderDesktopMatch) : <div className="no-matches-desktop">No matches</div>}
           </div>
         </div>
       );
@@ -323,7 +452,7 @@ const App: React.FC = () => {
     return <div className="weekly-grid">{days}</div>;
   };
 
-  return (
+  const renderDesktopApp = () => (
     <div className="app-container">
       {renderSidebar()}
       <div className="main-content">
@@ -339,12 +468,14 @@ const App: React.FC = () => {
               {renderCells()}
             </div>
           ) : (
-            renderWeeklyView()
+            renderDesktopWeeklyView()
           )}
         </div>
       </div>
     </div>
   );
+
+  return isMobile ? renderMobileView() : renderDesktopApp();
 };
 
 export default App;
