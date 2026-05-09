@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/lck_calender/sw.js', { scope: '/lck_calender/' })})}
