@@ -33,7 +33,7 @@ const App: React.FC = () => {
   });
 
   const [leagues, setLeagues] = useState<League[]>([]);
-  const [selectedLeagueId, setSelectedLeagueId] = useState<string>(LCK_LEAGUE_ID);
+  const [selectedLeagueIds, setSelectedLeagueIds] = useState<string[]>([LCK_LEAGUE_ID]);
   
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,25 +62,31 @@ const App: React.FC = () => {
     fetchLeagues();
   }, []);
 
-  // Fetch Schedule when selectedLeagueId changes
+  // Fetch Schedule when selectedLeagueIds changes
   useEffect(() => {
     const fetchSchedule = async () => {
+      if (selectedLeagueIds.length === 0) {
+        setMatches([]);
+        return;
+      }
       try {
         setLoading(true);
-        const response = await axios.get('https://esports-api.lolesports.com/persisted/gw/getSchedule', {
-          params: {
-            hl: 'ko-KR',
-            leagueId: selectedLeagueId
-          },
-          headers: {
-            'x-api-key': API_KEY
+        const promises = selectedLeagueIds.map(id =>
+          axios.get('https://esports-api.lolesports.com/persisted/gw/getSchedule', {
+            params: { hl: 'ko-KR', leagueId: id },
+            headers: { 'x-api-key': API_KEY }
+          })
+        );
+        const responses = await Promise.all(promises);
+        
+        let allMatches: Match[] = [];
+        responses.forEach(response => {
+          if (response.data && response.data.data && response.data.data.schedule && response.data.data.schedule.events) {
+            allMatches = [...allMatches, ...response.data.data.schedule.events];
           }
         });
-        if (response.data && response.data.data && response.data.data.schedule && response.data.data.schedule.events) {
-          setMatches(response.data.data.schedule.events);
-        } else {
-          setMatches([]);
-        }
+        
+        setMatches(allMatches);
         setError(null);
       } catch (err) {
         console.error(err);
@@ -92,7 +98,7 @@ const App: React.FC = () => {
     };
 
     fetchSchedule();
-  }, [selectedLeagueId]);
+  }, [selectedLeagueIds]);
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
@@ -120,6 +126,12 @@ const App: React.FC = () => {
     setCurrentDate(new Date());
   };
 
+  const toggleLeague = (id: string) => {
+    setSelectedLeagueIds(prev =>
+      prev.includes(id) ? prev.filter(lId => lId !== id) : [...prev, id]
+    );
+  };
+
   const renderSidebar = () => {
     return (
       <div className={`sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
@@ -128,8 +140,8 @@ const App: React.FC = () => {
           {leagues.map((league) => (
             <div 
               key={league.id} 
-              className={`league-item ${selectedLeagueId === league.id ? 'active' : ''}`}
-              onClick={() => setSelectedLeagueId(league.id)}
+              className={`league-item ${selectedLeagueIds.includes(league.id) ? 'active' : ''}`}
+              onClick={() => toggleLeague(league.id)}
             >
               {league.image ? (
                 <img src={league.image} alt={league.name} className="league-logo" />
