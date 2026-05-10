@@ -50,61 +50,116 @@ body {
    DESKTOP UI STYLES
    ========================================================================= */
 
-.app-container.desktop-layout {
+.app-container {
   display: flex;
   height: 100vh;
   overflow: hidden;
-  background-color: var(--bg-color);
 }
 
+/* Sidebar Styles */
+.sidebar {
+  width: var(--sidebar-width);
+  background-color: var(--header-bg);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
+  flex-shrink: 0;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.sidebar::-webkit-scrollbar {
+  display: none;
+}
+
+.sidebar.closed {
+  width: 0;
+  transform: translateX(-100%);
+  border-right: none;
+}
+
+.sidebar.open {
+  transform: translateX(0);
+}
+
+.sidebar-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--border-color);
+  font-weight: bold;
+  font-size: 1.2rem;
+  position: sticky;
+  top: 0;
+  background-color: var(--header-bg);
+  z-index: 10;
+}
+
+.league-list {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 0;
+}
+
+.league-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  gap: 10px;
+}
+
+.league-item:hover {
+  background-color: var(--hover-bg);
+}
+
+.league-item.active {
+  background-color: var(--hover-bg);
+  border-left: 4px solid var(--accent-color);
+}
+
+.league-logo, .league-logo-placeholder {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.league-name {
+  font-weight: 500;
+}
+
+/* Main Content Styles */
 .main-content {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  padding: 0 20px 20px 20px;
+  padding: 20px;
   align-items: center;
 }
 
 .content-wrapper {
   width: 100%;
-  max-width: 1400px;
+  max-width: 1200px;
   display: flex;
   flex-direction: column;
   flex: 1;
 }
 
-/* Desktop Header */
-.desktop-header {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 20px 0;
-  position: sticky;
-  top: 0;
-  background-color: var(--bg-color);
-  z-index: 10;
-  border-bottom: 1px solid var(--border-color);
-  margin-bottom: 20px;
-}
-
-.desktop-header-top {
+.header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
-.desktop-header-top h2 {
-  margin: 0;
-  font-size: 1.8rem;
-  font-weight: 800;
-  color: var(--accent-color);
-  letter-spacing: -0.5px;
-}
-
-.desktop-header-actions {
+.header-controls {
   display: flex;
   gap: 10px;
+  align-items: center;
 }
 
 .btn {
@@ -114,8 +169,7 @@ body {
   padding: 8px 16px;
   border-radius: 6px;
   cursor: pointer;
-  font-weight: 600;
-  font-size: 0.9rem;
+  font-weight: 500;
   transition: all 0.2s;
 }
 
@@ -129,88 +183,15 @@ body {
   border-color: var(--accent-color);
 }
 
-.icon-btn {
-  background: none;
-  border: none;
-  color: var(--text-color);
-  padding: 6px;
+.month-nav {
   display: flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  font-size: 1.1rem;
+  gap: 15px;
 }
 
-.icon-btn:hover {
-  background-color: var(--hover-bg);
-}
-
-/* League Filters (Pills) */
-.desktop-header-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.desktop-league-filters {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.desktop-league-filters::-webkit-scrollbar {
-  display: none;
-}
-
-.league-pill {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 20px;
-  background-color: var(--header-bg);
-  border: 1px solid var(--border-color);
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--secondary-text);
-}
-
-.league-pill:hover {
-  background-color: var(--hover-bg);
-  border-color: var(--text-color);
-}
-
-.league-pill.active {
-  background-color: var(--text-color);
-  color: var(--bg-color);
-  border-color: var(--text-color);
-}
-
-.league-pill-logo {
-  width: 16px;
-  height: 16px;
-  object-fit: contain;
-}
-
-/* Desktop Date Nav */
-.desktop-date-nav {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.desktop-date-title {
+.month-nav h2 {
   margin: 0;
-  font-size: 1.1rem;
-  min-width: 130px;
+  min-width: 150px;
   text-align: center;
 }
 
@@ -237,7 +218,6 @@ body {
   text-align: center;
   font-weight: bold;
   border-right: 1px solid var(--border-color);
-  font-size: 0.9rem;
 }
 .day-name:last-child {
   border-right: none;
@@ -246,18 +226,15 @@ body {
 .calendar-body {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  grid-auto-rows: minmax(100px, auto);
+  grid-auto-rows: minmax(120px, auto);
 }
 
 .calendar-cell {
   border-right: 1px solid var(--border-color);
   border-bottom: 1px solid var(--border-color);
-  padding: 4px;
+  padding: 8px;
   position: relative;
   transition: background-color 0.2s;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
 }
 
 .calendar-cell:nth-child(7n) {
@@ -274,76 +251,88 @@ body {
 }
 
 .date-number {
-  font-size: 12px;
-  font-weight: 700;
-  margin-left: 4px;
-  margin-top: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
   display: inline-block;
-  color: var(--secondary-text);
 }
 
-.calendar-cell.today .date-number {
-  color: var(--accent-color);
-}
-
-.events-container {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-/* Compact Match Pill */
-.desktop-match-pill {
+/* Desktop Match Event */
+.desktop-match-event {
   background-color: var(--bg-color);
   border: 1px solid var(--border-color);
-  border-radius: 4px;
-  padding: 4px;
+  border-radius: 6px;
+  padding: 6px;
+  margin-bottom: 6px;
+  font-size: 12px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  font-size: 11px;
+  gap: 4px;
   cursor: default;
-  transition: border-color 0.2s;
 }
 
-.desktop-match-pill:hover {
+.desktop-match-event:hover {
   border-color: var(--accent-color);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.pill-left, .pill-center {
+.desktop-match-time {
+  color: var(--secondary-text);
+  font-size: 11px;
+  text-align: center;
+  font-weight: 600;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.desktop-match-teams {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.desktop-team-row {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
+  justify-content: space-between;
 }
 
-.pill-left {
-  color: var(--secondary-text);
-  font-weight: 600;
-  font-size: 10px;
+.desktop-team-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.pill-league {
-  color: var(--accent-color);
-}
-
-.pill-team-logo {
-  width: 14px;
-  height: 14px;
+.desktop-team-logo, .desktop-team-logo-placeholder {
+  width: 20px;
+  height: 20px;
   object-fit: contain;
 }
 
-.pill-score {
-  margin: 0 2px;
+.desktop-team-code {
+  font-weight: bold;
 }
 
-.pill-score.live {
+.desktop-team-score {
+  font-weight: bold;
+}
+
+.desktop-team-score.win {
+  color: var(--win-color);
+}
+
+.desktop-team-score.loss {
   color: var(--loss-color);
 }
 
-.pill-score.final {
-  color: var(--win-color);
+.desktop-match-live {
+  font-size: 10px;
+  text-align: center;
+  text-transform: uppercase;
+  margin-top: 2px;
+  color: var(--loss-color);
+  font-weight: bold;
 }
 
 /* Desktop Weekly View */
