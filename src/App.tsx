@@ -59,9 +59,6 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Desktop Sidebar State
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  
   // Mobile Modal State
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
@@ -296,49 +293,41 @@ const App: React.FC = () => {
 
   // --- DESKTOP UI RENDERERS ---
 
-  const renderSidebar = () => {
-    return (
-      <div className={`sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
-        <div className="sidebar-header">Leagues</div>
-        <div className="league-list">
-          {leagues.map((league) => (
-            <div 
-              key={league.id} 
-              className={`league-item ${selectedLeagueIds.includes(league.id) ? 'active' : ''}`}
-              onClick={() => toggleLeague(league.id)}
-            >
-              {league.image ? (
-                <img src={league.image} alt={league.name} className="league-logo" />
-              ) : (
-                <div className="league-logo-placeholder" />
-              )}
-              <span className="league-name">{league.name}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  const renderHeader = () => {
+  const renderDesktopHeader = () => {
     const dateFormat = view === 'month' ? 'MMMM yyyy' : 'MMM d, yyyy';
     return (
-      <div className="header">
-        <div className="header-controls">
-          <button className="btn" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
-            ☰
-          </button>
-          <button className={`btn ${view === 'month' ? 'active' : ''}`} onClick={() => setView('month')}>Month</button>
-          <button className={`btn ${view === 'week' ? 'active' : ''}`} onClick={() => setView('week')}>Week</button>
-          <button className="btn" onClick={toggleTheme}>
-            {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
-          </button>
+      <div className="desktop-header">
+        <div className="desktop-header-top">
+          <h2>LoL Cal</h2>
+          <div className="desktop-header-actions">
+            <button className={`btn ${view === 'month' ? 'active' : ''}`} onClick={() => setView('month')}>Month</button>
+            <button className={`btn ${view === 'week' ? 'active' : ''}`} onClick={() => setView('week')}>Week</button>
+            <button className="btn" onClick={toggleTheme}>
+              {theme === 'light' ? '🌙' : '☀️'}
+            </button>
+          </div>
         </div>
-        <div className="month-nav">
-          <button className="btn" onClick={prevDate}>&lt; Prev</button>
-          <button className="btn" onClick={todayDate}>Today</button>
-          <h2>{format(currentDate, dateFormat)}</h2>
-          <button className="btn" onClick={nextDate}>Next &gt;</button>
+        
+        <div className="desktop-header-bottom">
+          <div className="desktop-league-filters">
+            {leagues.map((league) => (
+              <div 
+                key={league.id} 
+                className={`league-pill ${selectedLeagueIds.includes(league.id) ? 'active' : ''}`}
+                onClick={() => toggleLeague(league.id)}
+                title={league.name}
+              >
+                {league.image && <img src={league.image} alt={league.name} className="league-pill-logo" />}
+                <span className="league-pill-name">{league.name}</span>
+              </div>
+            ))}
+          </div>
+          <div className="desktop-date-nav">
+            <button className="icon-btn" onClick={prevDate}>&lt;</button>
+            <button className="btn" onClick={todayDate}>Today</button>
+            <h2 className="desktop-date-title">{format(currentDate, dateFormat)}</h2>
+            <button className="icon-btn" onClick={nextDate}>&gt;</button>
+          </div>
         </div>
       </div>
     );
@@ -365,27 +354,36 @@ const App: React.FC = () => {
     const matchData = match.match;
     const hasScore = match.state === 'completed' || inProgress;
 
-    return (
-      <div className="desktop-match-event" key={match.id}>
-        <div className="desktop-match-time">
-          <strong>[{match.league?.name}]</strong> {format(parseISO(match.startTime), 'HH:mm')} - {match.blockName || 'Match'}
+    if (!matchData || !matchData.teams || matchData.teams.length !== 2) {
+      return (
+        <div className="desktop-match-pill" key={match.id}>
+           <span className="pill-league">[{match.league?.name}]</span>
+           <span className="pill-time">{format(parseISO(match.startTime), 'HH:mm')}</span>
+           <span className="pill-text">{match.blockName || 'Match'}</span>
         </div>
-        {matchData && matchData.teams && matchData.teams.length === 2 && (
-          <div className="desktop-match-teams">
-            {matchData.teams.map((team, idx) => (
-              <div className="desktop-team-row" key={team.code || idx}>
-                <div className="desktop-team-info">
-                  {team.image ? <img src={team.image} alt={team.code} className="desktop-team-logo" /> : <div className="desktop-team-logo-placeholder" />}
-                  <span className="desktop-team-code">{team.code}</span>
-                </div>
-                <span className={`desktop-team-score ${match.state === 'completed' ? (team.result?.outcome === 'win' ? 'win' : 'loss') : ''}`}>
-                  {hasScore ? (team.result?.gameWins ?? '-') : '-'}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-        {inProgress && <div className="desktop-match-live">LIVE</div>}
+      );
+    }
+
+    const team1 = matchData.teams[0];
+    const team2 = matchData.teams[1];
+
+    return (
+      <div className="desktop-match-pill" key={match.id} title={`${team1.name} vs ${team2.name}`}>
+        <div className="pill-left">
+          <span className="pill-league">[{match.league?.name}]</span>
+          <span className="pill-time">{format(parseISO(match.startTime), 'HH:mm')}</span>
+        </div>
+        <div className="pill-center">
+          <span className="pill-team-code">{team1.code}</span>
+          {team1.image ? <img src={team1.image} alt={team1.code} className="pill-team-logo" /> : <div className="pill-logo-placeholder"/>}
+          
+          <span className={`pill-score ${inProgress ? 'live' : ''} ${hasScore && match.state === 'completed' ? 'final' : ''}`}>
+            {hasScore ? `${team1.result?.gameWins ?? 0} : ${team2.result?.gameWins ?? 0}` : 'vs'}
+          </span>
+          
+          {team2.image ? <img src={team2.image} alt={team2.code} className="pill-team-logo" /> : <div className="pill-logo-placeholder"/>}
+          <span className="pill-team-code">{team2.code}</span>
+        </div>
       </div>
     );
   };
@@ -453,11 +451,10 @@ const App: React.FC = () => {
   };
 
   const renderDesktopApp = () => (
-    <div className="app-container">
-      {renderSidebar()}
+    <div className="app-container desktop-layout">
       <div className="main-content">
         <div className="content-wrapper">
-          {renderHeader()}
+          {renderDesktopHeader()}
           {loading ? (
             <div className="loading">Loading schedule...</div>
           ) : error ? (
