@@ -648,6 +648,15 @@ body {
   padding: 10px 0;
 }
 
+.mobile-modal-section-title {
+  padding: 10px 20px 5px;
+  font-weight: 700;
+  color: var(--secondary-text);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .mobile-league-item {
   display: flex;
   align-items: center;

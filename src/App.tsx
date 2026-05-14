@@ -59,11 +59,30 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
+  // Team Filter State
+  const [selectedTeamCodes, setSelectedTeamCodes] = useState<string[]>([]);
+
   // Desktop Sidebar State
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   
   // Mobile Modal State
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
+  // Derived state: Unique teams from currently loaded matches
+  const availableTeams = Array.from(new Map(
+    matches
+      .filter(m => m.match && m.match.teams)
+      .flatMap(m => m.match.teams)
+      .filter(t => t.name && t.name !== 'TBD' && t.code) // Filter out TBD and empty teams
+      .map(t => [t.code, t])
+  ).values()).sort((a, b) => a.name.localeCompare(b.name));
+
+  // Filtered matches based on selected teams
+  const filteredMatches = matches.filter(match => {
+    if (selectedTeamCodes.length === 0) return true; // Show all if none selected
+    if (!match.match || !match.match.teams) return false;
+    return match.match.teams.some(team => selectedTeamCodes.includes(team.code));
+  });
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -160,8 +179,14 @@ const App: React.FC = () => {
     );
   };
 
+  const toggleTeam = (code: string) => {
+    setSelectedTeamCodes(prev =>
+      prev.includes(code) ? prev.filter(tCode => tCode !== code) : [...prev, code]
+    );
+  };
+
   const getMatchesForDay = (day: Date) => {
-    return matches.filter(match => isSameDay(parseISO(match.startTime), day));
+    return filteredMatches.filter(match => isSameDay(parseISO(match.startTime), day));
   };
 
   const renderMatchCard = (match: Match) => {
@@ -271,9 +296,10 @@ const App: React.FC = () => {
                 <button className="icon-btn close-btn" onClick={() => setIsMobileFilterOpen(false)}>✕</button>
               </div>
               <div className="mobile-modal-content">
+                <div className="mobile-modal-section-title">Leagues</div>
                 {leagues.map((league) => (
-                  <div 
-                    key={league.id} 
+                  <div
+                    key={league.id}
                     className={`mobile-league-item ${selectedLeagueIds.includes(league.id) ? 'active' : ''}`}
                     onClick={() => toggleLeague(league.id)}
                   >
@@ -286,8 +312,28 @@ const App: React.FC = () => {
                     {selectedLeagueIds.includes(league.id) && <span className="check-icon">✓</span>}
                   </div>
                 ))}
-              </div>
-            </div>
+
+                {availableTeams.length > 0 && (
+                  <>
+                    <div className="mobile-modal-section-title">Teams</div>
+                    {availableTeams.map((team) => (
+                      <div
+                        key={team.code}
+                        className={`mobile-league-item ${selectedTeamCodes.includes(team.code) ? 'active' : ''}`}
+                        onClick={() => toggleTeam(team.code)}
+                      >
+                        {team.image ? (
+                          <img src={team.image} alt={team.code} className="league-logo" />
+                        ) : (
+                          <div className="league-logo-placeholder" />
+                        )}
+                        <span className="league-name">{team.name}</span>
+                        {selectedTeamCodes.includes(team.code) && <span className="check-icon">✓</span>}
+                      </div>
+                    ))}
+                  </>
+                )}
+              </div>            </div>
           </div>
         )}
       </div>
@@ -302,8 +348,8 @@ const App: React.FC = () => {
         <div className="sidebar-header">Leagues</div>
         <div className="league-list">
           {leagues.map((league) => (
-            <div 
-              key={league.id} 
+            <div
+              key={league.id}
               className={`league-item ${selectedLeagueIds.includes(league.id) ? 'active' : ''}`}
               onClick={() => toggleLeague(league.id)}
             >
@@ -316,10 +362,30 @@ const App: React.FC = () => {
             </div>
           ))}
         </div>
+        {availableTeams.length > 0 && (
+          <>
+            <div className="sidebar-header">Teams</div>
+            <div className="league-list">
+              {availableTeams.map((team) => (
+                <div
+                  key={team.code}
+                  className={`league-item ${selectedTeamCodes.includes(team.code) ? 'active' : ''}`}
+                  onClick={() => toggleTeam(team.code)}
+                >
+                  {team.image ? (
+                    <img src={team.image} alt={team.code} className="league-logo" />
+                  ) : (
+                    <div className="league-logo-placeholder" />
+                  )}
+                  <span className="league-name">{team.name}</span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     );
   };
-
   const renderHeader = () => {
     const dateFormat = view === 'month' ? 'MMMM yyyy' : 'MMM d, yyyy';
     return (
