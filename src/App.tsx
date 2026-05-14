@@ -68,6 +68,9 @@ const App: React.FC = () => {
   // Mobile Modal State
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
+  // Sidebar Tab State
+  const [activeSidebarTab, setActiveSidebarTab] = useState<'leagues' | 'teams'>('leagues');
+
   // Derived state: Unique teams from currently loaded matches
   const availableTeams = Array.from(new Map(
     matches
@@ -292,12 +295,25 @@ const App: React.FC = () => {
           <div className="mobile-modal-overlay" onClick={() => setIsMobileFilterOpen(false)}>
             <div className="mobile-modal" onClick={e => e.stopPropagation()}>
               <div className="mobile-modal-header">
-                <h3>Select Leagues</h3>
+                <h3>Filters</h3>
                 <button className="icon-btn close-btn" onClick={() => setIsMobileFilterOpen(false)}>✕</button>
               </div>
+              <div className="sidebar-tabs">
+                <button 
+                  className={`sidebar-tab ${activeSidebarTab === 'leagues' ? 'active' : ''}`}
+                  onClick={() => setActiveSidebarTab('leagues')}
+                >
+                  Leagues
+                </button>
+                <button 
+                  className={`sidebar-tab ${activeSidebarTab === 'teams' ? 'active' : ''}`}
+                  onClick={() => setActiveSidebarTab('teams')}
+                >
+                  Teams
+                </button>
+              </div>
               <div className="mobile-modal-content">
-                <div className="mobile-modal-section-title">Leagues</div>
-                {leagues.map((league) => (
+                {activeSidebarTab === 'leagues' && leagues.map((league) => (
                   <div
                     key={league.id}
                     className={`mobile-league-item ${selectedLeagueIds.includes(league.id) ? 'active' : ''}`}
@@ -313,25 +329,23 @@ const App: React.FC = () => {
                   </div>
                 ))}
 
-                {availableTeams.length > 0 && (
-                  <>
-                    <div className="mobile-modal-section-title">Teams</div>
-                    {availableTeams.map((team) => (
-                      <div
-                        key={team.code}
-                        className={`mobile-league-item ${selectedTeamCodes.includes(team.code) ? 'active' : ''}`}
-                        onClick={() => toggleTeam(team.code)}
-                      >
-                        {team.image ? (
-                          <img src={team.image} alt={team.code} className="league-logo" />
-                        ) : (
-                          <div className="league-logo-placeholder" />
-                        )}
-                        <span className="league-name">{team.name}</span>
-                        {selectedTeamCodes.includes(team.code) && <span className="check-icon">✓</span>}
-                      </div>
-                    ))}
-                  </>
+                {activeSidebarTab === 'teams' && availableTeams.length > 0 && availableTeams.map((team) => (
+                  <div
+                    key={team.code}
+                    className={`mobile-league-item ${selectedTeamCodes.includes(team.code) ? 'active' : ''}`}
+                    onClick={() => toggleTeam(team.code)}
+                  >
+                    {team.image ? (
+                      <img src={team.image} alt={team.code} className="league-logo" />
+                    ) : (
+                      <div className="league-logo-placeholder" />
+                    )}
+                    <span className="league-name">{team.name}</span>
+                    {selectedTeamCodes.includes(team.code) && <span className="check-icon">✓</span>}
+                  </div>
+                ))}
+                {activeSidebarTab === 'teams' && availableTeams.length === 0 && (
+                  <div className="no-matches" style={{ margin: '20px' }}>No teams available</div>
                 )}
               </div>            </div>
           </div>
@@ -345,9 +359,22 @@ const App: React.FC = () => {
   const renderSidebar = () => {
     return (
       <div className={`sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
-        <div className="sidebar-header">Leagues</div>
+        <div className="sidebar-tabs">
+          <button 
+            className={`sidebar-tab ${activeSidebarTab === 'leagues' ? 'active' : ''}`}
+            onClick={() => setActiveSidebarTab('leagues')}
+          >
+            Leagues
+          </button>
+          <button 
+            className={`sidebar-tab ${activeSidebarTab === 'teams' ? 'active' : ''}`}
+            onClick={() => setActiveSidebarTab('teams')}
+          >
+            Teams
+          </button>
+        </div>
         <div className="league-list">
-          {leagues.map((league) => (
+          {activeSidebarTab === 'leagues' && leagues.map((league) => (
             <div
               key={league.id}
               className={`league-item ${selectedLeagueIds.includes(league.id) ? 'active' : ''}`}
@@ -361,28 +388,25 @@ const App: React.FC = () => {
               <span className="league-name">{league.name}</span>
             </div>
           ))}
-        </div>
-        {availableTeams.length > 0 && (
-          <>
-            <div className="sidebar-header">Teams</div>
-            <div className="league-list">
-              {availableTeams.map((team) => (
-                <div
-                  key={team.code}
-                  className={`league-item ${selectedTeamCodes.includes(team.code) ? 'active' : ''}`}
-                  onClick={() => toggleTeam(team.code)}
-                >
-                  {team.image ? (
-                    <img src={team.image} alt={team.code} className="league-logo" />
-                  ) : (
-                    <div className="league-logo-placeholder" />
-                  )}
-                  <span className="league-name">{team.name}</span>
-                </div>
-              ))}
+
+          {activeSidebarTab === 'teams' && availableTeams.length > 0 && availableTeams.map((team) => (
+            <div
+              key={team.code}
+              className={`league-item ${selectedTeamCodes.includes(team.code) ? 'active' : ''}`}
+              onClick={() => toggleTeam(team.code)}
+            >
+              {team.image ? (
+                <img src={team.image} alt={team.code} className="league-logo" />
+              ) : (
+                <div className="league-logo-placeholder" />
+              )}
+              <span className="league-name">{team.name}</span>
             </div>
-          </>
-        )}
+          ))}
+          {activeSidebarTab === 'teams' && availableTeams.length === 0 && (
+            <div className="no-matches" style={{ margin: '20px' }}>No teams available</div>
+          )}
+        </div>
       </div>
     );
   };
