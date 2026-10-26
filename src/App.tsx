@@ -21,6 +21,55 @@ import './App.css';
 const LCK_LEAGUE_ID = '98767991310872058';
 const API_KEY = '0TvQnueqKa5mxJntVWt0w4LpLfEkrV1Ta8rQBb9Z';
 
+// League importance, biggest first (international > LCK > LPL > LEC > LCS > ...).
+// Leagues not listed here rank below all of these.
+const LEAGUE_PRIORITY = [
+  'worlds',
+  'msi',
+  'first_stand',
+  'ewc_lol',
+  'asian_games',
+  'lck',
+  'lpl',
+  'lec',
+  'lcs',
+  'lta_n',
+  'lcp',
+  'cblol-brazil',
+  'lta_s',
+  'ljl-japan',
+  'lck_challengers_league',
+];
+
+const getLeagueRank = (slug?: string) => {
+  const idx = slug ? LEAGUE_PRIORITY.indexOf(slug) : -1;
+  return idx === -1 ? LEAGUE_PRIORITY.length : idx;
+};
+
+// Order matches by league importance first, then by start time.
+const compareMatches = (a: Match, b: Match) =>
+  getLeagueRank(a.league?.slug) - getLeagueRank(b.league?.slug) ||
+  new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+
+// Pick the biggest league playing today. If nothing is on today,
+// use the next day that has matches. Returns a league slug or null.
+const pickDefaultLeagueSlug = (events: Match[]): string | null => {
+  const now = new Date();
+  const todays = events.filter(e => isSameDay(parseISO(e.startTime), now));
+  let candidates = todays;
+  if (candidates.length === 0) {
+    const upcoming = events
+      .filter(e => parseISO(e.startTime) > now)
+      .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+    if (upcoming.length > 0) {
+      const nextDay = parseISO(upcoming[0].startTime);
+      candidates = upcoming.filter(e => isSameDay(parseISO(e.startTime), nextDay));
+    }
+  }
+  if (candidates.length === 0) return null;
+  return [...candidates].sort(compareMatches)[0].league?.slug ?? null;
+};
+
 const App: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   
@@ -53,7 +102,9 @@ const App: React.FC = () => {
   });
 
   const [leagues, setLeagues] = useState<League[]>([]);
-  const [selectedLeagueIds, setSelectedLeagueIds] = useState<string[]>([LCK_LEAGUE_ID]);
+  const [selectedLeagueIds, setSelectedLeagueIds] = useState<string[]>([]);
+  // True once the default league (biggest event today) has been chosen
+  const [leagueSelectionReady, setLeagueSelectionReady] = useState(false);
   
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,27 +142,48 @@ const App: React.FC = () => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  // Fetch Leagues
+  // Fetch leagues, then pick the biggest league playing today as the default selection
   useEffect(() => {
-    const fetchLeagues = async () => {
+    const init = async () => {
+      let leagueList: League[] = [];
       try {
         const response = await axios.get('https://esports-api.lolesports.com/persisted/gw/getLeagues', {
           params: { hl: 'ko-KR' },
           headers: { 'x-api-key': API_KEY }
         });
         if (response.data && response.data.data && response.data.data.leagues) {
-          setLeagues(response.data.data.leagues);
+          leagueList = response.data.data.leagues;
+          setLeagues(leagueList);
         }
       } catch (err) {
         console.error('Failed to load leagues:', err);
       }
+
+      let defaultId = LCK_LEAGUE_ID;
+      try {
+        // Without a leagueId the API returns the schedule around now for all leagues
+        const response = await axios.get('https://esports-api.lolesports.com/persisted/gw/getSchedule', {
+          params: { hl: 'ko-KR' },
+          headers: { 'x-api-key': API_KEY }
+        });
+        const events: Match[] = response.data?.data?.schedule?.events ?? [];
+        const slug = pickDefaultLeagueSlug(events);
+        const league = slug ? leagueList.find(l => l.slug === slug) : undefined;
+        if (league) defaultId = league.id;
+      } catch (err) {
+        console.error('Failed to pick default league:', err);
+      }
+
+      setSelectedLeagueIds([defaultId]);
+      setLeagueSelectionReady(true);
     };
-    fetchLeagues();
+    init();
   }, []);
 
   // Fetch Schedule when selectedLeagueIds changes
   useEffect(() => {
     const fetchSchedule = async () => {
+      if (!leagueSelectionReady) return;
       if (selectedLeagueIds.length === 0) {
         setMatches([]);
         return;
@@ -148,7 +220,7 @@ const App: React.FC = () => {
     };
 
     fetchSchedule();
-  }, [selectedLeagueIds]);
+  }, [selectedLeagueIds, leagueSelectionReady]);
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
@@ -189,7 +261,9 @@ const App: React.FC = () => {
   };
 
   const getMatchesForDay = (day: Date) => {
-    return filteredMatches.filter(match => isSameDay(parseISO(match.startTime), day));
+    return filteredMatches
+      .filter(match => isSameDay(parseISO(match.startTime), day))
+      .sort(compareMatches);
   };
 
   const renderMatchCard = (match: Match) => {
